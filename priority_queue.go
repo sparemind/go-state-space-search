@@ -2,15 +2,15 @@ package astar
 
 // node represents a state being explored by A*.
 type node struct {
-	state      State
-	transition interface{}
-	gscore     float64
-	cost       float64 // The cost of the node in the queue (lowest at front).
-	parent     *node   // Previous state in the lowest cost path to this state.
-	index      int     // The index of the node in the heap (used for heap fixing).
+	state             State
+	transition        interface{}
+	costFromStart     float64 // Best known cost from starting state to this state
+	estimatedPathCost float64 // Estimate of total path cost from start to goal that goes through this state
+	parent            *node   // Previous state in the lowest cost path to this state
+	index             int     // The index of the node in the heap (used for heap fixing)
 }
 
-// A PriorityQueue implements heap.Interface and holds state nodes.
+// A PriorityQueue implements heap.Interface and holds state nodes, ordered in increasing estimated path cost.
 type PriorityQueue []*node
 
 func (p PriorityQueue) Len() int {
@@ -18,7 +18,7 @@ func (p PriorityQueue) Len() int {
 }
 
 func (p PriorityQueue) Less(i int, j int) bool {
-	return p[i].cost < p[j].cost
+	return p[i].estimatedPathCost < p[j].estimatedPathCost
 }
 
 func (p PriorityQueue) Swap(i, j int) {

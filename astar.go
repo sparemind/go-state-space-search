@@ -13,9 +13,9 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 	closedSet := make(map[State]bool)
 	openSet := make(PriorityQueue, 0)
 	heap.Push(&openSet, &node{
-		state:  start,
-		gscore: 0,
-		cost:   start.EstimateCost(&goal),
+		state:             start,
+		costFromStart:     0,
+		estimatedPathCost: start.EstimateCost(&goal),
 	})
 	for len(openSet) > 0 {
 		current := heap.Pop(&openSet).(*node)
@@ -24,7 +24,7 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 		}
 		if current.state == goal {
 			solution := make([]StateTransition, 0)
-			solutionCost := current.gscore
+			solutionCost := current.costFromStart
 			var transition interface{}
 			if current.parent != nil {
 				transition = current.transition
@@ -53,16 +53,16 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 			if closedSet[next.State] {
 				continue
 			}
-			tentativeGScore := current.gscore + next.Cost
-			if nextItem, exists := itemCache[next.State]; !exists || tentativeGScore < nextItem.gscore {
+			realCost := current.costFromStart + next.Cost
+			if nextItem, exists := itemCache[next.State]; !exists || realCost < nextItem.costFromStart {
 				if !exists {
 					nextItem = &node{
 						state: next.State,
 					}
 					itemCache[next.State] = nextItem
 				}
-				nextItem.cost = tentativeGScore + next.State.EstimateCost(&goal)
-				nextItem.gscore = tentativeGScore
+				nextItem.estimatedPathCost = realCost + next.State.EstimateCost(&goal)
+				nextItem.costFromStart = realCost
 				nextItem.parent = current
 				nextItem.transition = next.Transition
 				if exists {
