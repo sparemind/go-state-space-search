@@ -15,7 +15,7 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 	heap.Push(&openSet, &node{
 		state:  start,
 		gscore: 0,
-		fscore: start.EstimateCost(&goal),
+		cost:   start.EstimateCost(&goal),
 	})
 	for len(openSet) > 0 {
 		current := heap.Pop(&openSet).(*node)
@@ -61,9 +61,8 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 					}
 					itemCache[next.State] = nextItem
 				}
-				nextItem.fscore = tentativeGScore + next.State.EstimateCost(&goal)
+				nextItem.cost = tentativeGScore + next.State.EstimateCost(&goal)
 				nextItem.gscore = tentativeGScore
-				nextItem.cost = nextItem.fscore
 				nextItem.parent = current
 				nextItem.transition = next.Transition
 				if exists {

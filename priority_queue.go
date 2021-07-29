@@ -4,7 +4,6 @@ package astar
 type node struct {
 	state      State
 	transition interface{}
-	fscore     float64
 	gscore     float64
 	cost       float64 // The cost of the node in the queue (lowest at front).
 	parent     *node   // Previous state in the lowest cost path to this state.
