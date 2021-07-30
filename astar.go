@@ -9,8 +9,7 @@ import (
 // along with the path's total cost. It additionally returns a boolean flag
 // of whether a path could be found.
 func Search(start State, goal State) ([]StateTransition, float64, bool) {
-	itemCache := make(map[State]*node)
-	closedSet := make(map[State]bool)
+	nodes := make(map[State]*node)
 	openSet := make(PriorityQueue, 0)
 	heap.Push(&openSet, &node{
 		state:             start,
@@ -19,59 +18,66 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 	})
 	for len(openSet) > 0 {
 		current := heap.Pop(&openSet).(*node)
-		if closedSet[current.state] {
-			continue
-		}
 		if current.state == goal {
-			solution := make([]StateTransition, 0)
-			solutionCost := current.costFromStart
-			var transition interface{}
-			if current.parent != nil {
-				transition = current.transition
-				current = current.parent
-			}
-			for current.parent != nil {
-				solution = append(solution, StateTransition{
-					State:      current.state,
-					Transition: transition,
-				})
-				transition = current.transition
-				current = current.parent
-			}
-			solution = append(solution, StateTransition{
-				State:      start,
-				Transition: transition,
-			})
-			// Reverse solution since it was constructed in reverse
-			for i, j := 0, len(solution)-1; i < j; i, j = i+1, j-1 {
-				solution[i], solution[j] = solution[j], solution[i]
-			}
-			return solution, solutionCost, true
+			pathCost := current.costFromStart
+			path := reconstructPath(current)
+			return path, pathCost, true
 		}
-		closedSet[current.state] = true
+		current.closed = true
 		for _, next := range current.state.NextStates() {
-			if closedSet[next.State] {
+			nextNode, exists := nodes[next.State]
+			if !exists {
+				nextNode = &node{
+					state: next.State,
+				}
+				nodes[next.State] = nextNode
+			}
+			if nextNode.closed {
 				continue
 			}
-			realCost := current.costFromStart + next.Cost
-			if nextItem, exists := itemCache[next.State]; !exists || realCost < nextItem.costFromStart {
-				if !exists {
-					nextItem = &node{
-						state: next.State,
-					}
-					itemCache[next.State] = nextItem
-				}
-				nextItem.estimatedPathCost = realCost + next.State.EstimateCost(&goal)
-				nextItem.costFromStart = realCost
-				nextItem.parent = current
-				nextItem.transition = next.Transition
+			costFromStart := current.costFromStart + next.Cost
+			if !exists || costFromStart < nextNode.costFromStart {
+				nextNode.estimatedPathCost = costFromStart + next.State.EstimateCost(&goal)
+				nextNode.costFromStart = costFromStart
+				nextNode.parent = current
+				nextNode.transition = next.Transition
 				if exists {
-					heap.Fix(&openSet, nextItem.index)
+					heap.Fix(&openSet, nextNode.index)
 				} else {
-					heap.Push(&openSet, nextItem)
+					heap.Push(&openSet, nextNode)
 				}
 			}
 		}
 	}
 	return nil, 0, false
+}
+
+func reconstructPath(goal *node) []StateTransition {
+	// Find all states in the solution path
+	goalToStartPath := make([]*node, 0)
+	current := goal
+	for current != nil {
+		goalToStartPath = append(goalToStartPath, current)
+		current = current.parent
+	}
+
+	path := make([]StateTransition, 0, len(goalToStartPath))
+	for i := len(goalToStartPath) - 1; i > 0; i-- {
+		current := goalToStartPath[i]
+		next := goalToStartPath[i-1]
+
+		nextStates := current.state.NextStates()
+		for _, nextState := range nextStates {
+			if nextState.State == next.state {
+				path = append(path, StateTransition{
+					State:      current.state,
+					Transition: nextState.Transition,
+					Cost:       nextState.Cost,
+				})
+				break
+			}
+		}
+	}
+
+	return path
 }
