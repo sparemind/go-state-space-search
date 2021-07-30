@@ -6,7 +6,12 @@ import (
 	"testing"
 )
 
-func assertSolutionCost(t *testing.T, expectedCost float64, worldString string, args ...position) {
+func assertSolutionCost(
+	t *testing.T,
+	expectedCost float64,
+	worldString string,
+	args ...position,
+) []astar.StateTransition {
 	world, start, goal := newWorld(worldString)
 	if len(args) > 0 {
 		start.x, start.y = args[0].x, args[0].y
@@ -14,6 +19,7 @@ func assertSolutionCost(t *testing.T, expectedCost float64, worldString string, 
 			goal.x, goal.y = args[1].x, args[1].y
 		}
 	}
+
 	solution, cost, found := astar.Search(start, goal)
 	if !found && expectedCost >= 0 {
 		t.Fatalf("expected solution with cost %f, no solution found", expectedCost)
@@ -22,6 +28,7 @@ func assertSolutionCost(t *testing.T, expectedCost float64, worldString string, 
 		fmt.Println(world.SolutionString(solution))
 		t.Fatalf("expected solution with cost %f, found solution with cost %f", expectedCost, cost)
 	}
+	return solution
 }
 
 func TestSearch_Search_NoSolution(t *testing.T) {
@@ -43,11 +50,14 @@ func TestSearch_Search_NoSolution(t *testing.T) {
 }
 
 func TestSearch_EmptySolution(t *testing.T) {
-	assertSolutionCost(t, 0, `
+	path := assertSolutionCost(t, 0, `
 		111
 		1@1
 		111
 	`, position{x: 1, y: 1}, position{x: 1, y: 1})
+	if len(path) != 0 {
+		t.Fatalf("expected solution path to be empty, was %d states long", len(path))
+	}
 }
 
 func TestSearch_StraightPath(t *testing.T) {
