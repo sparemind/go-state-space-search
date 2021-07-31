@@ -2,7 +2,8 @@ package astar
 
 // State represents a node in a weighted state graph. States are aware of their
 // neighboring States that they can transition to. Implementing this interface
-// enables shortest-path searches to be performed on the state graph.
+// enables shortest-path searches to be performed on the state graph. This
+// interface must be implemented on a comparable type.
 type State interface {
 	// NextStates returns the States directly reachable from this State.
 	NextStates() []StateTransition
