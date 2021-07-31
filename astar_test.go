@@ -132,17 +132,15 @@ func TestSearch_TakeShortcut(t *testing.T) {
 }
 
 func TestSearch_AvoidBacktracking(t *testing.T) {
-	assertSolution(t, 16, `
-		.........
-		.######..
-		......#..
-		......#..
-		@.....#.*
-		......#..
-		......#..
-		.######..
-		.........
-	`)
+	assertSolution(t, 15, `
+		......#.
+		......#.
+		@.....#*
+		......#.
+		......#.
+		.######.
+		........
+	`, "VVVV>>>>>>>^^^^")
 }
 
 func TestSearch_LongPath(t *testing.T) {
