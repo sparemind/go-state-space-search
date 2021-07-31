@@ -85,6 +85,8 @@ func (w *world) SolutionString(solution []astar.StateTransition) string {
 		for x, value := range row {
 			if direction, ok := solutionSteps[position{x, y, w}]; ok {
 				builder.WriteString(direction)
+			} else if value < 0 {
+				builder.WriteRune(PathImpassable)
 			} else {
 				builder.WriteString(strconv.Itoa(value))
 			}
