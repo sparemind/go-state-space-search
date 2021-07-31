@@ -19,6 +19,7 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 		state:             start,
 		costFromStart:     0,
 		estimatedPathCost: start.EstimateCost(&goal),
+		open:              true,
 	})
 	for len(openSet) > 0 {
 		current := heap.Pop(&openSet).(*node)
@@ -27,7 +28,7 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 			path := reconstructPath(current)
 			return path, pathCost, true
 		}
-		current.closed = true
+		current.open = false
 		for _, next := range current.state.NextStates() {
 			nextNode, exists := nodes[next.State]
 			if !exists {
@@ -36,15 +37,12 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 				}
 				nodes[next.State] = nextNode
 			}
-			if nextNode.closed {
-				continue
-			}
 			costFromStart := current.costFromStart + next.Cost
 			if !exists || costFromStart < nextNode.costFromStart {
 				nextNode.estimatedPathCost = costFromStart + next.State.EstimateCost(&goal)
 				nextNode.costFromStart = costFromStart
 				nextNode.parent = current
-				if exists {
+				if nextNode.open {
 					heap.Fix(&openSet, nextNode.index)
 				} else {
 					heap.Push(&openSet, nextNode)

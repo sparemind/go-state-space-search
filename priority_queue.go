@@ -3,7 +3,7 @@ package astar
 // node represents a state being explored by A*.
 type node struct {
 	state             State
-	closed            bool
+	open              bool
 	costFromStart     float64 // Best known cost from starting state to this state
 	estimatedPathCost float64 // Estimate of total path cost from start to goal that goes through this state
 	parent            *node   // Previous state in the lowest cost path to this state
