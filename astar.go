@@ -29,6 +29,7 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 			return path, pathCost, true
 		}
 		current.open = false
+		current.closed = true
 		for _, next := range current.state.NextStates() {
 			nextNode, exists := nodes[next.State]
 			if !exists {
@@ -36,6 +37,9 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 					state: next.State,
 				}
 				nodes[next.State] = nextNode
+			}
+			if nextNode.closed {
+				continue
 			}
 			costFromStart := current.costFromStart + next.Cost
 			if !exists || costFromStart < nextNode.costFromStart {

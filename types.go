@@ -8,8 +8,9 @@ type State interface {
 	// NextStates returns the States directly reachable from this State.
 	NextStates() []StateTransition
 	// EstimateCost returns an estimate of how much it would cost to reach
-	// another State from this State. This estimate doesn't overestimate the
-	// actual cost it would take to reach it.
+	// another State from this State. This estimate is a consistent heuristic
+	// (i.e. it never overestimates the combined estimated cost from any neighboring
+	// state to the given state plus the cost of reaching that neighbor).
 	EstimateCost(*State) float64
 }
 
