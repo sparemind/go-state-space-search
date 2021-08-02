@@ -1,1 +1,1 @@
-module "github.com/sparemind/go-astar"
+module "github.com/sparemind/go-state-space-search"

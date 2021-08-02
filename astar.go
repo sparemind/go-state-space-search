@@ -1,5 +1,5 @@
 // Package astar implements the A* search algorithm.
-package astar
+package search
 
 import (
 	"container/heap"

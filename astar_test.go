@@ -1,8 +1,8 @@
-package astar_test
+package search_test
 
 import (
 	"fmt"
-	"github.com/sparemind/go-astar"
+	"github.com/sparemind/go-state-space-search"
 	"math/rand"
 	"strings"
 	"testing"
@@ -20,7 +20,7 @@ func assertSolution(
 	expectedCost float64,
 	worldString string,
 	args ...interface{},
-) []astar.StateTransition {
+) []search.StateTransition {
 	world, start, goal := newWorld(worldString)
 
 	var expectedPathTransitions *string = nil
@@ -33,7 +33,7 @@ func assertSolution(
 		}
 	}
 
-	solution, cost, found := astar.Search(start, goal)
+	solution, cost, found := search.Search(start, goal)
 	if !found && expectedCost >= 0 {
 		t.Fatalf("expected solution with cost %f, no solution found", expectedCost)
 	}
@@ -50,7 +50,7 @@ func assertSolution(
 	return solution
 }
 
-func pathTransitions(path []astar.StateTransition) string {
+func pathTransitions(path []search.StateTransition) string {
 	builder := strings.Builder{}
 	for _, step := range path {
 		builder.WriteString(step.Transition.(string))
@@ -169,6 +169,6 @@ func BenchmarkSearch(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		astar.Search(start, goal)
+		search.Search(start, goal)
 	}
 }

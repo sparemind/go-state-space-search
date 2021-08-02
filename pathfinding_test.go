@@ -1,7 +1,7 @@
-package astar_test
+package search_test
 
 import (
-	"github.com/sparemind/go-astar"
+	"github.com/sparemind/go-state-space-search"
 	"math"
 	"strconv"
 	"strings"
@@ -71,7 +71,7 @@ func newWorld(worldString string) (*world, position, position) {
 	return &world, start, goal
 }
 
-func (w *world) SolutionString(solution []astar.StateTransition) string {
+func (w *world) SolutionString(solution []search.StateTransition) string {
 	solutionSteps := make(map[position]string)
 	for _, step := range solution {
 		if step.Transition == nil {
@@ -107,8 +107,8 @@ func newPosition(x int, y int, world *world) position {
 	return position{x: x, y: y, world: world}
 }
 
-func (p position) NextStates() []astar.StateTransition {
-	nextStates := make([]astar.StateTransition, 0, 4)
+func (p position) NextStates() []search.StateTransition {
+	nextStates := make([]search.StateTransition, 0, 4)
 	for direction, offset := range directions {
 		nextX := p.x + offset[0]
 		nextY := p.y + offset[1]
@@ -119,7 +119,7 @@ func (p position) NextStates() []astar.StateTransition {
 		if cost < 0 {
 			continue
 		}
-		nextStates = append(nextStates, astar.StateTransition{
+		nextStates = append(nextStates, search.StateTransition{
 			State:      newPosition(nextX, nextY, p.world),
 			Transition: direction,
 			Cost:       cost,
@@ -128,7 +128,7 @@ func (p position) NextStates() []astar.StateTransition {
 	return nextStates
 }
 
-func (p position) EstimateCost(state *astar.State) float64 {
+func (p position) EstimateCost(state *search.State) float64 {
 	other := (*state).(position)
 	return math.Abs(float64(other.x-p.x)) + math.Abs(float64(other.y-p.y))
 }

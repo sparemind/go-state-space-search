@@ -1,4 +1,4 @@
-package astar
+package search
 
 // node represents a state being explored by A*.
 type node struct {

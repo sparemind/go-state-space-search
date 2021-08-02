@@ -1,4 +1,4 @@
-# go-astar - A* Search for Go
+# State Space Search Algorithms
 
 A performant and flexible implementation of the [A* search algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm) for Go.
 
@@ -6,7 +6,7 @@ A performant and flexible implementation of the [A* search algorithm](https://en
 
 ### 1. Import the package
 ```go
-import "github.com/sparemind/go-astar"
+import "github.com/sparemind/go-state-space-search"
 ```
 
 ### 2. Implement the State interface
@@ -28,14 +28,14 @@ type Position struct {
     y int
 }
 
-func (p Position) NextStates() []astar.StateTransition {
-    neighbors := make([]astar.StateTransition, 0)
+func (p Position) NextStates() []search.StateTransition {
+    neighbors := make([]search.StateTransition, 0)
     for _, direction := range Directions {
     	neighbor, moveCost, canMove := p.Move(direction)
     	if !canMove {
             continue
         }
-        neighbors = append(neighbors, astar.StateTransition{
+        neighbors = append(neighbors, search.StateTransition{
             State:      neighbor,
             Transition: direction,
             Cost:       moveCost,
@@ -57,7 +57,7 @@ Each step consists of a state, the transition to the next state in the path, and
 ```go
 start := NewPosition(0, 0)
 goal := NewPosition(8, 2)
-solution, cost, found := astar.Search(start, goal)
+solution, cost, found := search.Search(start, goal)
 
 printWorld(world)
 printWorldWithSolution(world, solution)

@@ -1,4 +1,4 @@
-package astar
+package search
 
 // State represents a node in a weighted state graph. States are aware of their
 // neighboring States that they can transition to. Implementing this interface
