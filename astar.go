@@ -1,4 +1,4 @@
-// Package astar implements the A* search algorithm.
+// Package search implements the A* search algorithm.
 package search
 
 import (
