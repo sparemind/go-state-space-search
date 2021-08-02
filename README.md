@@ -1,5 +1,7 @@
 # State Space Search Algorithms
 
+![Build Status](https://img.shields.io/github/workflow/status/sparemind/go-state-space-search/Continuous%20Integration)
+
 A performant and flexible implementation of the [A* search algorithm](https://en.wikipedia.org/wiki/A*_search_algorithm) for Go.
 
 ## Usage Example
