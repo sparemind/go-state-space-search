@@ -1,0 +1,11 @@
+name: Continuous Integration
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+      - name: Check out code
+        uses: actions/checkout@v2
+      - run: make test
