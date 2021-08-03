@@ -155,7 +155,7 @@ func TestSearch_LongPath(t *testing.T) {
 
 func BenchmarkSearch(b *testing.B) {
 	rand.Seed(0)
-	worldSize := 256
+	worldSize := 1024
 
 	world := make(world, worldSize)
 	for y := 0; y < worldSize; y++ {
@@ -168,7 +168,11 @@ func BenchmarkSearch(b *testing.B) {
 	goal := newPosition(worldSize-1, worldSize-1, &world)
 
 	b.ResetTimer()
+	fmt.Printf("Benchmarking pathfinding on %dx%d world...\n", worldSize, worldSize)
+	var solution []search.StateTransition
+	var cost float64
 	for i := 0; i < b.N; i++ {
-		search.Search(start, goal)
+		solution, cost, _ = search.Search(start, goal)
 	}
+	fmt.Printf("Shortest path found: %d steps long costing %f\n", len(solution), cost)
 }
