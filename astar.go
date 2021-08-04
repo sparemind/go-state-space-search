@@ -49,6 +49,7 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 				if nextNode.open {
 					heap.Fix(&openSet, nextNode.index)
 				} else {
+					nextNode.open = true
 					heap.Push(&openSet, nextNode)
 				}
 			}
