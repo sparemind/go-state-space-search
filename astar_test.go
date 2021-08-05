@@ -153,6 +153,38 @@ func TestSearch_LongPath(t *testing.T) {
 	`, ">>VV>>>>>>>>V>V>>>")
 }
 
+func TestSearch_SuboptimalWeighting(t *testing.T) {
+	world, start, goal := newWorld(`
+		.....@999*
+		.########.
+		..........
+	`)
+	solution, cost, _ := search.Search(start, goal)
+	if cost != 18 {
+		fmt.Println(world.SolutionString(solution))
+		t.Fatalf("expected solution with cost 18, found solution with cost %f", cost)
+	}
+	solution, cost, _ = search.Search(start, goal, 2.0)
+	if cost != 28 {
+		fmt.Println(world.SolutionString(solution))
+		t.Fatalf("expected solution with cost 28, found solution with cost %f", cost)
+	}
+}
+
+func TestSearch_CustomHeuristic(t *testing.T) {
+	_, start, goal := newWorld(`
+		@...*
+	`)
+	count := 0
+	search.Search(start, goal, func(state search.State, other *search.State) float64 {
+		count++
+		return 0
+	})
+	if count != 5 {
+		t.Fatalf("expected custom heuristic to be called 5 times, was called %d times", count)
+	}
+}
+
 func BenchmarkSearch(b *testing.B) {
 	rand.Seed(0)
 	worldSize := 1024

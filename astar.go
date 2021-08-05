@@ -12,15 +12,28 @@ import (
 // the goal, starting from the start state. Each step consists of the state,
 // the transition to the next state in the path, and the cost of making the
 // transition.
-func Search(start State, goal State) ([]StateTransition, float64, bool) {
+func Search(start State, goal State, args ...interface{}) ([]StateTransition, float64, bool) {
+	weight := 1.0
+	estimateCost := State.EstimateCost
+	for _, arg := range args {
+		switch arg := arg.(type) {
+		case float64:
+			weight = arg
+		case func(State, *State) float64:
+			estimateCost = arg
+		}
+	}
+
 	nodes := make(map[State]*node)
 	openSet := make(PriorityQueue, 0)
-	heap.Push(&openSet, &node{
+	startNode := &node{
 		state:             start,
 		costFromStart:     0,
-		estimatedPathCost: start.EstimateCost(&goal),
+		estimatedPathCost: estimateCost(start, &goal) * weight,
 		open:              true,
-	})
+	}
+	nodes[start] = startNode
+	heap.Push(&openSet, startNode)
 	for len(openSet) > 0 {
 		current := heap.Pop(&openSet).(*node)
 		if current.state == goal {
@@ -43,7 +56,7 @@ func Search(start State, goal State) ([]StateTransition, float64, bool) {
 			}
 			costFromStart := current.costFromStart + next.Cost
 			if !exists || costFromStart < nextNode.costFromStart {
-				nextNode.estimatedPathCost = costFromStart + next.State.EstimateCost(&goal)
+				nextNode.estimatedPathCost = costFromStart + estimateCost(next.State, &goal)*weight
 				nextNode.costFromStart = costFromStart
 				nextNode.parent = current
 				if nextNode.open {
