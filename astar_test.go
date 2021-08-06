@@ -33,21 +33,30 @@ func assertSolution(
 		}
 	}
 
-	solution, cost, found := search.Search(start, goal)
-	if !found && expectedCost >= 0 {
-		t.Fatalf("expected solution with cost %f, no solution found", expectedCost)
+	searchFunctions := map[string]func(search.State, search.State, ...interface{}) ([]search.StateTransition, float64, bool){
+		"Search":          search.Search,
+		"IterativeSearch": search.IterativeSearch,
 	}
-	if found && cost != expectedCost {
-		fmt.Println(world.SolutionString(solution))
-		t.Fatalf("expected solution with cost %f, found solution with cost %f", expectedCost, cost)
+	var testSolution []search.StateTransition
+	for name, searchFunc := range searchFunctions {
+		solution, cost, found := searchFunc(start, goal)
+		testSolution = solution
+		if !found && expectedCost >= 0 {
+			t.Fatalf("%s: expected solution with cost %f, no solution found", name, expectedCost)
+		}
+		if found && cost != expectedCost {
+			fmt.Println(world.SolutionString(solution))
+			t.Fatalf("%s: expected solution with cost %f, found solution with cost %f", name, expectedCost, cost)
+		}
+		if pathTransitions := pathTransitions(solution); expectedPathTransitions != nil &&
+			pathTransitions != *expectedPathTransitions {
+			t.Fatalf("%s: expected solution with directions %s, was %s",
+				name,
+				*expectedPathTransitions,
+				pathTransitions)
+		}
 	}
-	if pathTransitions := pathTransitions(solution); expectedPathTransitions != nil &&
-		pathTransitions != *expectedPathTransitions {
-		t.Fatalf("expected solution with directions %s, was %s",
-			*expectedPathTransitions,
-			pathTransitions)
-	}
-	return solution
+	return testSolution
 }
 
 func pathTransitions(path []search.StateTransition) string {
@@ -58,7 +67,7 @@ func pathTransitions(path []search.StateTransition) string {
 	return builder.String()
 }
 
-func TestSearch_Search_NoSolution(t *testing.T) {
+func TestSearch_NoSolution(t *testing.T) {
 	assertSolution(t, -1, `
 		..#..
 		@.#.*
@@ -159,15 +168,21 @@ func TestSearch_SuboptimalWeighting(t *testing.T) {
 		.########.
 		..........
 	`)
-	solution, cost, _ := search.Search(start, goal)
-	if cost != 18 {
-		fmt.Println(world.SolutionString(solution))
-		t.Fatalf("expected solution with cost 18, found solution with cost %f", cost)
+	searchFunctions := map[string]func(search.State, search.State, ...interface{}) ([]search.StateTransition, float64, bool){
+		"Search":          search.Search,
+		"IterativeSearch": search.IterativeSearch,
 	}
-	solution, cost, _ = search.Search(start, goal, 2.0)
-	if cost != 28 {
-		fmt.Println(world.SolutionString(solution))
-		t.Fatalf("expected solution with cost 28, found solution with cost %f", cost)
+	for name, searchFunc := range searchFunctions {
+		solution, cost, _ := searchFunc(start, goal)
+		if cost != 18 {
+			fmt.Println(world.SolutionString(solution))
+			t.Fatalf("%s: expected solution with cost 18, found solution with cost %f", name, cost)
+		}
+		solution, cost, _ = searchFunc(start, goal, 2.0)
+		if cost <= 18 {
+			fmt.Println(world.SolutionString(solution))
+			t.Fatalf("%s: expected solution with cost >18, found solution with cost %f", name, cost)
+		}
 	}
 }
 
@@ -182,6 +197,20 @@ func TestSearch_CustomHeuristic(t *testing.T) {
 	})
 	if count != 5 {
 		t.Fatalf("expected custom heuristic to be called 5 times, was called %d times", count)
+	}
+}
+
+func TestIterativeSearch_CustomHeuristic(t *testing.T) {
+	_, start, goal := newWorld(`
+		@...*
+	`)
+	called := false
+	search.IterativeSearch(start, goal, func(state search.State, other *search.State) float64 {
+		called = true
+		return 0
+	})
+	if !called {
+		t.Fatal("expected custom heuristic to be called but was not")
 	}
 }
 
